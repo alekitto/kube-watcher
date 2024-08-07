@@ -2,11 +2,13 @@
 name = "kube-watcher"
 version = "1.0.0"
 edition = "2021"
+license = "MIT"
+authors = ["Alessandro Chitolina <alekitto@gmail.com>"]
 
 [dependencies]
 chrono = { version = "0.4" }
 clap = { version = "4.5", features = ["derive", "color"] }
-config = { version = "0.14", features = ["async", "json", "yaml", "toml"] }
+config = { version = "0.14", features = ["json", "yaml", "toml"] }
 env_logger = { version = "0.11" }
 futures = { version = "0.3" }
 log = { version = "0.4" }
@@ -19,6 +21,4 @@ reqwest-retry = { version = "0.6" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 url = { version = "2.5.2", features = ["serde"] }
-tokio-graceful-shutdown = "0.15.1"
-
-[features]
+tokio-graceful-shutdown = { version = "0.15.1" }
