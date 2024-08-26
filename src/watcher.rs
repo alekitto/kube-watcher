@@ -1,12 +1,15 @@
 use crate::config::ConfigResource;
 use crate::k8s::{ApiResource, DynamicObject};
 use futures::stream::BoxStream;
-use futures::StreamExt;
+use futures::{Stream, StreamExt};
+use kube::api::TypeMeta;
 use kube::runtime::reflector::Store;
 use kube::runtime::{reflector, watcher, WatchStreamExt};
 use kube::{Api, Client, ResourceExt};
 use log::{info, trace};
 use std::error::Error;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use tokio_graceful_shutdown::SubsystemHandle;
 
 pub struct Watcher {
@@ -47,7 +50,7 @@ impl Watcher {
     ) -> Result<
         (
             Vec<WatchSubsystem>,
-            Vec<BoxStream<'a, Result<DynamicObject, watcher::Error>>>,
+            Vec<impl Stream<Item = Result<DynamicObject, watcher::Error>>>,
         ),
         Box<dyn Error>,
     > {
@@ -101,9 +104,37 @@ impl Watcher {
                 .boxed();
 
             subsys.push(WatchSubsystem { reader });
-            streams.push(stream);
+            streams.push(StreamWrapper {
+                api_resource,
+                inner: stream,
+            });
         }
 
         Ok((subsys, streams))
+    }
+}
+
+struct StreamWrapper<'w> {
+    api_resource: ApiResource,
+    inner: BoxStream<'w, Result<DynamicObject, watcher::Error>>,
+}
+
+impl<'w> Stream for StreamWrapper<'w> {
+    type Item = Result<DynamicObject, watcher::Error>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        match self.inner.poll_next_unpin(cx) {
+            Poll::Ready(Some(Ok(mut obj))) => {
+                if obj.types.is_none() {
+                    obj.types = Some(TypeMeta {
+                        api_version: self.api_resource.api_version.clone(),
+                        kind: self.api_resource.kind.clone(),
+                    })
+                }
+
+                Poll::Ready(Some(Ok(obj)))
+            }
+            res => res,
+        }
     }
 }
