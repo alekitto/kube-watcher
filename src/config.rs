@@ -14,6 +14,6 @@ pub struct ConfigResource {
 
 #[derive(Deserialize, Debug)]
 pub struct ConfigTrigger {
-    pub http: Vec<HttpNotification>,
-    pub sqs: Vec<SqsNotification>,
+    pub http: Option<Vec<HttpNotification>>,
+    pub sqs: Option<Vec<SqsNotification>>,
 }

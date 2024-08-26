@@ -60,6 +60,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .add_source(File::from(PathBuf::from(args.config)))
         .build()?;
 
+    debug!("Parsed configuration: {:#?}", config);
+
     let watcher = Watcher::new(config.get("resource")?);
     let (watchers, streams) = watcher.watch().await?;
 

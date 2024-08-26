@@ -21,4 +21,6 @@ FROM bitnami/minideb:bookworm AS stage-0
 RUN install_packages libssl3 ca-certificates
 COPY --from=build /kube-watcher /kube-watcher
 
+USER nobody
+
 ENTRYPOINT ["/kube-watcher"]

@@ -1,7 +1,6 @@
 use crate::k8s::ApiResource;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use kube::api::TypeMeta;
-use kube::core::dynamic::ParseDynamicObjectError;
 use kube::core::DynamicResourceScope;
 use kube::Resource;
 use std::borrow::Cow;
@@ -23,44 +22,7 @@ pub struct DynamicObject {
     pub data: serde_json::Value,
 }
 
-impl DynamicObject {
-    /// Create a DynamicObject with minimal values set from ApiResource.
-    #[must_use]
-    pub fn new(name: &str, resource: &ApiResource) -> Self {
-        Self {
-            types: Some(TypeMeta {
-                api_version: resource.api_version.to_string(),
-                kind: resource.kind.to_string(),
-            }),
-            metadata: ObjectMeta {
-                name: Some(name.to_string()),
-                ..Default::default()
-            },
-            data: Default::default(),
-        }
-    }
-
-    /// Attach dynamic data to a DynamicObject
-    #[must_use]
-    pub fn data(mut self, data: serde_json::Value) -> Self {
-        self.data = data;
-        self
-    }
-
-    /// Attach a namespace to a DynamicObject
-    #[must_use]
-    pub fn within(mut self, ns: &str) -> Self {
-        self.metadata.namespace = Some(ns.into());
-        self
-    }
-
-    /// Attempt to convert this `DynamicObject` to a `Resource`
-    pub fn try_parse<K: Resource + for<'a> serde::Deserialize<'a>>(
-        self,
-    ) -> Result<K, ParseDynamicObjectError> {
-        Ok(serde_json::from_value(serde_json::to_value(self)?)?)
-    }
-}
+impl DynamicObject {}
 
 impl Resource for DynamicObject {
     type DynamicType = ApiResource;

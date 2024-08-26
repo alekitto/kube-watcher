@@ -14,8 +14,8 @@ pub struct Notifier {
 impl Notifier {
     pub fn new(triggers: ConfigTrigger) -> Self {
         Self {
-            http: triggers.http,
-            sqs: triggers.sqs,
+            http: triggers.http.unwrap_or_default(),
+            sqs: triggers.sqs.unwrap_or_default(),
         }
     }
 
