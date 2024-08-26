@@ -1,4 +1,4 @@
-use crate::notifier::HttpNotification;
+use crate::notifier::{HttpNotification, SqsNotification};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -15,4 +15,5 @@ pub struct ConfigResource {
 #[derive(Deserialize, Debug)]
 pub struct ConfigTrigger {
     pub http: Vec<HttpNotification>,
+    pub sqs: Vec<SqsNotification>,
 }
