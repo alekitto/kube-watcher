@@ -83,16 +83,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let mut combo_stream = stream::select_all(streams);
         loop {
             select! {
-                Ok(Some(o)) = combo_stream.try_next() => {
-                    let metadata = o.metadata.clone();
+                v = combo_stream.try_next() => {
+                    match v {
+                        Ok(Some(o)) => {
+                            let metadata = o.metadata.clone();
+                            debug!(
+                                "changes detected for object {}/{}",
+                                metadata.namespace.unwrap_or_default(),
+                                metadata.name.unwrap_or_default()
+                            );
 
-                    debug!(
-                        "changes detected for object {}/{}",
-                        metadata.namespace.unwrap_or_default(),
-                        metadata.name.unwrap_or_default()
-                    );
-
-                    sender.send(o).unwrap();
+                            sender.send(o).unwrap();
+                        },
+                        Ok(None) => continue,
+                        Err(_) => {
+                            s.request_shutdown();
+                            break;
+                        }
+                    }
                 },
                 _ = s.on_shutdown_requested() => break,
                 else => continue,
