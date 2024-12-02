@@ -16,6 +16,7 @@ pub struct HttpNotification {
 impl HttpNotification {
     pub(super) fn notify(&self, o: &DynamicObject) {
         let request_body = json!({
+            "source": "io.k8s-watcher",
             "timestamp": chrono::Utc::now().to_rfc3339(),
             "object": o,
         })

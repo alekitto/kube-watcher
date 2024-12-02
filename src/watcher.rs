@@ -119,7 +119,7 @@ struct StreamWrapper<'w> {
     inner: BoxStream<'w, Result<DynamicObject, watcher::Error>>,
 }
 
-impl<'w> Stream for StreamWrapper<'w> {
+impl Stream for StreamWrapper<'_> {
     type Item = Result<DynamicObject, watcher::Error>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
